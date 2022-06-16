@@ -1,4 +1,5 @@
 ﻿using MyHomeApi.Infrastructure.Smarthome.Models;
+using MyHomeApi.Infrastructure.Smarthome.Providers.Ewelink.Models;
 using System.Net.Http.Headers;
 
 namespace MyHomeApi.Infrastructure.Smarthome.Providers.Ewelink
@@ -19,7 +20,8 @@ namespace MyHomeApi.Infrastructure.Smarthome.Providers.Ewelink
 
         public async Task<IEnumerable<Device>> GetAllDevicesAsync()
         {
-            return await _httpClient.GetFromJsonAsync<IEnumerable<Device>>($"user/device?lang=en&appid={_configuration["EweLink:AppId"]}&version=8&getTags=1");
+            var result = await _httpClient.GetFromJsonAsync<DevicesResult>($"user/device?lang=en&appid={_configuration["EweLink:AppId"]}&version=8&getTags=1");
+            return result.DeviceList;
         }
 
         public async Task<Device> GetDeviceAsync(string deviceId)
