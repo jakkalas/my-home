@@ -5,5 +5,6 @@
         public string DeviceId { get; set; }
         public string Name { get; set; }
         public DeviceType Type { get; set; }
+        public Switch[] Switches { get; set; }
     }
 }
