@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MyHomeApi.Infrastructure.Smarthome.Providers.Ewelink.Models;
+using Newtonsoft.Json;
 
 namespace MyHomeApi.Infrastructure.Smarthome.Models
 {
@@ -15,11 +16,39 @@ namespace MyHomeApi.Infrastructure.Smarthome.Models
 
         [JsonProperty("params")]
         public Params Params { get; set; }
+
+        [JsonProperty("extra")]
+        public ExtraParent Extra { get; set; }
+
+        public int ChannelCount => EweLinkConstants.DevicesChannelLengths[EweLinkConstants.DeviceTypeUuid[Extra.Extra.Uiid]];
     }
 
     public class Params
     {
         [JsonProperty("switches")]
         public Switch[] Switches { get; set; }
+    }
+
+    public class Switch
+    {
+        [JsonProperty("switch")]
+        public string SwitchStatus { get; set; }
+
+        [JsonProperty("outlet")]
+        public int Outlet { get; set; }
+
+        public bool IsPoweredOn => SwitchStatus != "off";
+    }
+
+    public class ExtraParent
+    {
+        [JsonProperty("extra")]
+        public Extra Extra { get; set; }
+    }
+
+    public class Extra
+    {
+        [JsonProperty("uiid")]
+        public int Uiid { get; set; }
     }
 }

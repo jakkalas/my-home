@@ -20,23 +20,20 @@ namespace MyHomeApi.Infrastructure.Smarthome.Providers.Ewelink
 
         public async Task<IEnumerable<Device>> GetAllDevicesAsync()
         {
+            var json = await _httpClient.GetStringAsync($"user/device?lang=en&appid={_configuration["EweLink:AppId"]}&version=8&getTags=1");
             var result = await _httpClient.GetFromJsonAsync<DevicesResult>($"user/device?lang=en&appid={_configuration["EweLink:AppId"]}&version=8&getTags=1");
             return result.DeviceList;
         }
 
         public async Task<Device> GetDeviceAsync(string deviceId)
         {
-            throw new NotImplementedException();
+            return await _httpClient.GetFromJsonAsync<Device>($"user/device/{deviceId}?deviceid={deviceId}&lang=en&appid={_configuration["EweLink:AppId"]}&version=8&getTags=1");
         }
 
-        public async Task<int> GetDeviceChannelCountAsync(string deviceId)
+        public async Task<bool> GetIsDevicePowerOn(string deviceId, int? channel)
         {
-            throw new NotImplementedException();
-        }
-
-        public async Task<bool> GetDevicePowerStateAsync(string deviceId, int? channel)
-        {
-            throw new NotImplementedException();
+            var result = await _httpClient.GetFromJsonAsync<Device>($"user/device/status?deviceid={deviceId}&lang=en&appid={_configuration["EweLink:AppId"]}&version=8&getTags=1");
+            return result.Params.Switches[channel ?? 0].IsPoweredOn;
         }
 
         public Task<bool> ToggleDeviceAsync(string deviceId, int? channel)

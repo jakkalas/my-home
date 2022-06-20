@@ -6,8 +6,7 @@ namespace MyHomeApi.Infrastructure.Smarthome.Providers
     {
         Task<IEnumerable<Device>> GetAllDevicesAsync();
         Task<Device> GetDeviceAsync(string deviceId);
-        Task<int> GetDeviceChannelCountAsync(string deviceId);
-        Task<bool> GetDevicePowerStateAsync(string deviceId, int? channel);
+        Task<bool> GetIsDevicePowerOn(string deviceId, int? channel);
         Task<bool> ToggleDeviceAsync(string deviceId, int? channel);
     }
 }
