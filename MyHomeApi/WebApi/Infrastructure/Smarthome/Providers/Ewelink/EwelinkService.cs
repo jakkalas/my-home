@@ -1,5 +1,6 @@
 ﻿using MyHomeApi.Infrastructure.Smarthome.Models;
 using MyHomeApi.Infrastructure.Smarthome.Providers.Ewelink.Models;
+using Newtonsoft.Json;
 using System.Net.Http.Headers;
 
 namespace MyHomeApi.Infrastructure.Smarthome.Providers.Ewelink
@@ -20,20 +21,25 @@ namespace MyHomeApi.Infrastructure.Smarthome.Providers.Ewelink
 
         public async Task<IEnumerable<Device>> GetAllDevicesAsync()
         {
-            var json = await _httpClient.GetStringAsync($"user/device?lang=en&appid={_configuration["EweLink:AppId"]}&version=8&getTags=1");
-            var result = await _httpClient.GetFromJsonAsync<DevicesResult>($"user/device?lang=en&appid={_configuration["EweLink:AppId"]}&version=8&getTags=1");
-            return result.DeviceList;
+            var response = await _httpClient.GetStringAsync($"user/device?lang=en&appid={_configuration["EweLink:AppId"]}&version=8&getTags=1");
+            return JsonConvert.DeserializeObject<DevicesResult>(response).DeviceList;
         }
 
         public async Task<Device> GetDeviceAsync(string deviceId)
         {
-            return await _httpClient.GetFromJsonAsync<Device>($"user/device/{deviceId}?deviceid={deviceId}&lang=en&appid={_configuration["EweLink:AppId"]}&version=8&getTags=1");
+            var response = await _httpClient.GetStringAsync($"user/device/{deviceId}?deviceid={deviceId}&lang=en&appid={_configuration["EweLink:AppId"]}&version=8&getTags=1");
+            return JsonConvert.DeserializeObject<Device>(response);
         }
 
         public async Task<bool> GetIsDevicePowerOn(string deviceId, int? channel)
         {
-            var result = await _httpClient.GetFromJsonAsync<Device>($"user/device/status?deviceid={deviceId}&lang=en&appid={_configuration["EweLink:AppId"]}&version=8&getTags=1");
-            return result.Params.Switches[channel ?? 0].IsPoweredOn;
+            var response = await _httpClient.GetStringAsync($"user/device/status?deviceid={deviceId}&lang=en&appid={_configuration["EweLink:AppId"]}&version=8&getTags=1");
+            var device = JsonConvert.DeserializeObject<Device>(response);
+            if (device.Params.Switches.Count() == 0)
+            {
+                return device.Params.IsPoweredOn;
+            }
+            return device.Params.Switches[channel ?? 0].IsPoweredOn;
         }
 
         public Task<bool> ToggleDeviceAsync(string deviceId, int? channel)

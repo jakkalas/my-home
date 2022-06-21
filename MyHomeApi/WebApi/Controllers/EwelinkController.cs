@@ -32,9 +32,25 @@ namespace MyHomeApi.Controllers
 
         [HttpGet]
         [Route("device/ispoweredon")]
-        public async Task<bool> GetIsDevicePowerOnAsync(string deviceId, int? channel)
+        public async Task<bool> GetIsDevicePowerOnAsync(
+            string deviceId, 
+            int? channel)
         {
             return await _eweLinkService.GetIsDevicePowerOn(deviceId, channel);
+        }
+
+        [HttpPost]
+        [Route("device/toggle")]
+        public async Task<HttpResponseMessage> ToggleDeviceAsync(
+            string deviceId, 
+            int? channel)
+        {
+            var result = await _eweLinkService.ToggleDeviceAsync(deviceId, channel);
+            if (result)
+            {
+                return new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            }
+            return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
         }
     }
 }

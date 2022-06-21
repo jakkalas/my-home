@@ -27,15 +27,17 @@ namespace MyHomeApi.Infrastructure.Smarthome.Models
     {
         [JsonProperty("switches")]
         public Switch[] Switches { get; set; }
+
+        [JsonProperty("switch")]
+        public string SwitchStatus { get; set; }
+
+        public bool IsPoweredOn => SwitchStatus != "off";
     }
 
     public class Switch
     {
         [JsonProperty("switch")]
         public string SwitchStatus { get; set; }
-
-        [JsonProperty("outlet")]
-        public int Outlet { get; set; }
 
         public bool IsPoweredOn => SwitchStatus != "off";
     }
