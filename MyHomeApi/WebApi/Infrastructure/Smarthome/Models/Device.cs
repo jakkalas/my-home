@@ -23,28 +23,16 @@ namespace MyHomeApi.Infrastructure.Smarthome.Models
         public int ChannelCount => EweLinkConstants.DevicesChannelLengths[EweLinkConstants.DeviceTypeUuid[Extra.Extra.Uiid]];
     }
 
-    public class Params
+    public class Params : BaseSwitch
     {
         [JsonProperty("switches")]
-        public Switch[] Switches { get; set; }
-
-        [JsonProperty("switch")]
-        public string SwitchStatus { get; set; }
-
-        [JsonIgnore]
-        public bool IsPoweredOn => SwitchStatus != "off";
+        public Switch[] Switches { get; set; }        
     }
 
-    public class Switch
+    public class Switch : BaseSwitch
     {
-        [JsonProperty("switch")]
-        public string SwitchStatus { get; set; }
-
         [JsonProperty("outlet")]
         public int Outlet { get; set; }
-
-        [JsonIgnore]
-        public bool IsPoweredOn => SwitchStatus != "off";
     }
 
     public class ExtraParent
@@ -57,5 +45,17 @@ namespace MyHomeApi.Infrastructure.Smarthome.Models
     {
         [JsonProperty("uiid")]
         public int Uiid { get; set; }
+    }
+
+    public class BaseSwitch
+    {
+        [JsonProperty("switch")]
+        public string SwitchStatus { get; set; }
+
+        [JsonIgnore]
+        public bool IsPoweredOn => SwitchStatus != "off";
+
+        [JsonIgnore]
+        public string GetToggleStatus => IsPoweredOn ? "off" : "on";
     }
 }
