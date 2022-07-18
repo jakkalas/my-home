@@ -53,7 +53,7 @@ namespace MyHomeApiTets.Infrastructure.Smarthome.Providers.EweLink
                         var configuration = Substitute.For<IConfiguration>();
                         configuration["EweLink:Url"].Returns("https://test.com");
                         var expectedDevices = GetRandomArray<Device>();
-                        expectedDevices.ForEach(x => x.Extra.Extra.Uiid = GetRandomInt(1, 10));
+                        expectedDevices.ForEach(x => x.Extra.Extra.Uiid = GetRandomInt(1, 8));
                         var expectedResult = GetRandom<DevicesResult>();
                         expectedResult.DeviceList = expectedDevices;
                         var messageHandler = new MockHttpMessageHandler(JsonConvert.SerializeObject(expectedResult), HttpStatusCode.OK);
@@ -65,6 +65,97 @@ namespace MyHomeApiTets.Infrastructure.Smarthome.Providers.EweLink
 
                         // expect
                         Expect(result).To.Intersection.Equal(expectedDevices);
+                    }
+                }
+            }
+        }
+
+        [TestFixture]
+        public class GetDeviceAsyncTests
+        {
+            [TestFixture]
+            public class GivenResponseStatusIsOK
+            {
+                [TestFixture]
+                public class GivenValidResult
+                {
+                    [Test]
+                    public async Task ThenShouldReturnDevice()
+                    {
+                        // setup
+                        var configuration = Substitute.For<IConfiguration>();
+                        configuration["EweLink:Url"].Returns("https://test.com");
+                        var expectedDevice = GetRandom<Device>();
+                        expectedDevice.Extra.Extra.Uiid = GetRandomInt(1, 8);
+                        var messageHandler = new MockHttpMessageHandler(JsonConvert.SerializeObject(expectedDevice), HttpStatusCode.OK);
+                        var httpClient = new HttpClient(messageHandler);
+                        var sut = Create(httpClient, configuration);
+
+                        // execute
+                        var result = await sut.GetDeviceAsync(GetRandomString());
+
+                        // expect
+                        Expect(result).To.Deep.Equal(expectedDevice);
+                    }
+                }
+            }
+        }
+
+        [TestFixture]
+        public class GetIsDevicePowerOnTests
+        {
+            [TestFixture]
+            public class GivenResponseStatusIsOK
+            {
+                [TestFixture]
+                public class GivenResultHasNoSwitches
+                {
+                    [TestCase("on", true)]
+                    [TestCase("off", false)]
+                    public async Task ThenShouldReturnCorrectPoweredOnState(string switchStatus, bool expectedResult)
+                    {
+                        // setup
+                        var configuration = Substitute.For<IConfiguration>();
+                        configuration["EweLink:Url"].Returns("https://test.com");
+                        var expectedDevice = GetRandom<Device>();
+                        expectedDevice.Extra.Extra.Uiid = GetRandomInt(1, 8);
+                        expectedDevice.Params.Switches = new Switch[0];
+                        expectedDevice.Params.SwitchStatus = switchStatus;
+                        var messageHandler = new MockHttpMessageHandler(JsonConvert.SerializeObject(expectedDevice), HttpStatusCode.OK);
+                        var httpClient = new HttpClient(messageHandler);
+                        var sut = Create(httpClient, configuration);
+
+                        // execute
+                        var result = await sut.GetIsDevicePowerOn(GetRandomString(), 0);
+
+                        // expect
+                        Expect(result).To.Equal(expectedResult);
+                    }
+                }
+
+                [TestFixture]
+                public class GivenResultHasSwitches
+                {
+                    [TestCase("on", true)]
+                    [TestCase("off", false)]
+                    public async Task ThenShouldReturnCorrectPoweredOnState(string switchStatus, bool expectedResult)
+                    {
+                        // setup
+                        var configuration = Substitute.For<IConfiguration>();
+                        configuration["EweLink:Url"].Returns("https://test.com");
+                        var expectedDevice = GetRandom<Device>();
+                        expectedDevice.Extra.Extra.Uiid = GetRandomInt(1, 8);
+                        expectedDevice.Params.Switches = GetRandomArray<Switch>(1);
+                        expectedDevice.Params.Switches[0].SwitchStatus = switchStatus;
+                        var messageHandler = new MockHttpMessageHandler(JsonConvert.SerializeObject(expectedDevice), HttpStatusCode.OK);
+                        var httpClient = new HttpClient(messageHandler);
+                        var sut = Create(httpClient, configuration);
+
+                        // execute
+                        var result = await sut.GetIsDevicePowerOn(GetRandomString(), 0);
+
+                        // expect
+                        Expect(result).To.Equal(expectedResult);
                     }
                 }
             }
