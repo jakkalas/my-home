@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using NSubstitute;
 using NExpect;
 using static NExpect.Expectations;
-using MyHomeApi.Infrastructure.Models;
 using System.Net;
 using static PeanutButter.RandomGenerators.RandomValueGen;
 using MyHomeApi.Infrastructure.Smarthome.Models;
@@ -13,6 +12,7 @@ using MyHomeApi.Infrastructure.Smarthome.Providers.Ewelink.Models;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using PeanutButter.Utils;
+using MyHomeApi.Entities;
 
 namespace MyHomeApiTets.Infrastructure.Smarthome.Providers.EweLink
 {
@@ -161,7 +161,7 @@ namespace MyHomeApiTets.Infrastructure.Smarthome.Providers.EweLink
             }
         }
 
-        private static EweLinkService Create(
+		private static EweLinkService Create(
             HttpClient httpClient = null,
             IConfiguration configuration = null)
         {

@@ -1,7 +1,8 @@
 ﻿using System.Net;
 using System.Runtime.Serialization;
+using MyHomeApi.Infrastructure.Models;
 
-namespace MyHomeApi.Infrastructure.Models
+namespace MyHomeApi.Entities
 {
     [Serializable]
     public class ApiException : Exception

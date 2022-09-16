@@ -1,14 +1,35 @@
+using MyHomeApi.Authorization;
+using MyHomeApi.Entities;
+using MyHomeApi.Helpers;
 using MyHomeApi.Infrastructure.Smarthome.Providers.Ewelink;
+using MyHomeApi.Services;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+{
+	var services = builder.Services;
+	var env = builder.Environment;
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddHttpClient<EweLinkService>();
+	services.AddDbContext<DataContext>();
+	services.AddCors();
+	services.AddControllers().AddJsonOptions(x =>
+	{
+		// serialize enums as strings in api responses (e.g. Role)
+		x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+	});
+	services.AddEndpointsApiExplorer();
+	services.AddSwaggerGen();
+	services.AddHttpClient<EweLinkService>();
+
+	// configure strongly typed settings object
+	services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+
+	// configure DI for application services
+	services.AddScoped<IJwtUtils, JwtUtils>();
+	services.AddScoped<IUserService, UserService>();
+}
 
 var app = builder.Build();
 
@@ -19,10 +40,36 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// configure HTTP request pipeline
+{
+	// global cors policy
+	app.UseCors(x => x
+		.AllowAnyOrigin()
+		.AllowAnyMethod()
+		.AllowAnyHeader());
 
-app.UseAuthorization();
+	// global error handler
+	app.UseMiddleware<ErrorHandlerMiddleware>();
 
-app.MapControllers();
+	// custom jwt auth middleware
+	app.UseMiddleware<JwtMiddleware>();
+	app.UseHttpsRedirection();
+
+	app.MapControllers();
+}
+
+// create hardcoded test users in db on startup
+{
+	var testUsers = new List<User>
+	{
+		new User { Id = 1, FirstName = "Admin", LastName = "User", Email = "jacolouw82@gmail.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"), Role = Role.Admin },
+		new User { Id = 2, FirstName = "Normal", LastName = "User", Email = "test-my-home@myhome.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("user"), Role = Role.User }
+	};
+
+	using var scope = app.Services.CreateScope();
+	var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+	dataContext.Users.AddRange(testUsers);
+	dataContext.SaveChanges();
+}
 
 app.Run();

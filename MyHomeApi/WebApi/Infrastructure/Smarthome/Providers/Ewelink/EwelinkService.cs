@@ -1,9 +1,12 @@
-﻿using MyHomeApi.Infrastructure.Models;
+﻿using MyHomeApi.Entities;
+using MyHomeApi.Infrastructure.Models;
 using MyHomeApi.Infrastructure.Smarthome.Models;
 using MyHomeApi.Infrastructure.Smarthome.Providers.Ewelink.Models;
 using Newtonsoft.Json;
+using System;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Threading.Channels;
 
 namespace MyHomeApi.Infrastructure.Smarthome.Providers.Ewelink
 {
@@ -57,45 +60,59 @@ namespace MyHomeApi.Infrastructure.Smarthome.Providers.Ewelink
             string deviceId, 
             int? channel)
         {
-            dynamic request = new
-            {
-                appid = _configuration["EweLink:AppId"],
-                deviceid = deviceId,
-                @params = new
-                {
-                    switches = new List<dynamic>()
-                }
-            };
             var device = await GetDeviceAsync(deviceId);
 
             if (device.Params.Switches.Count() == 0)
             {
-                request.@params = new
-                {
-                    @switch = device.Params.IsPoweredOn ? "off" : "on"
-                };
-            } 
-            else
-            {
-                var index = 0;
-                foreach (var switches in device.Params.Switches)
-                {
-                    if (index == channel)
-                    {
-                        request.@params.switches.Add(new
-                        {
-                            @switch = switches.IsPoweredOn ? "off" : "on",
-                            outlet = switches.Outlet
-                        });
-                    }
-                    index++;
-                }                
+                return await ToggleSingleSwitchDeviceAsync(
+                    device, 
+                    deviceId);
             }
-            var response = await _httpClient.PostAsync("user/device/status", new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json"));
-            return response.IsSuccessStatusCode;
-        }
 
-        private void ProcessResponse(
+            return await ToggleMultipleSwitchDeviceAsync(
+                device,
+                deviceId,
+                channel);
+		}
+
+        private async Task<bool> ToggleSingleSwitchDeviceAsync(
+            Device device,
+			string deviceId)
+        {
+            var request = new ToggleSingleSwitchDeviceRequest(
+                _configuration["EweLink:AppId"],
+                deviceId,
+                device);
+
+			var response = await _httpClient.PostAsync(
+                "user/device/status", 
+                new StringContent(JsonConvert.SerializeObject(request), 
+                Encoding.UTF8, 
+                "application/json"));
+			return response.IsSuccessStatusCode;
+		}
+
+		private async Task<bool> ToggleMultipleSwitchDeviceAsync(
+			Device device,
+			string deviceId,
+			int? channel)
+		{
+			var request = new ToggleMultipleSwitchDeviceRequest(
+                _configuration["EweLink:AppId"],
+				deviceId);
+            request.SetSwitchParams(
+                device, 
+                channel);
+
+			var response = await _httpClient.PostAsync(
+                "user/device/status", 
+                new StringContent(JsonConvert.SerializeObject(request), 
+                Encoding.UTF8, 
+                "application/json"));
+			return response.IsSuccessStatusCode;
+		}
+
+		private void ProcessResponse(
             HttpResponseMessage response, 
             string responseContent) 
         {
