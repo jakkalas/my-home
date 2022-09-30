@@ -7,6 +7,7 @@ namespace MyHomeApi.Helpers
 	public class DataContext : DbContext
 	{
 		public DbSet<User> Users { get; set; }
+		public DbSet<AuditLog> AuditLogs { get; set; }
 
 		private readonly IConfiguration Configuration;
 
@@ -17,12 +18,7 @@ namespace MyHomeApi.Helpers
 
 		protected override void OnConfiguring(DbContextOptionsBuilder options)
 		{
-#if DEBUG
-			// in memory database
-			options.UseInMemoryDatabase("TestDb");
-#else
 			options.UseSqlite(Configuration.GetConnectionString("MyHomeDatabase"));
-#endif
 		}
 	}
 }

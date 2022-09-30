@@ -62,8 +62,8 @@ if (app.Environment.IsDevelopment())
 {
 	var testUsers = new List<User>
 	{
-		new User { Id = 1, FirstName = "Admin", LastName = "User", Email = "jacolouw82@gmail.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin"), Role = Role.Admin },
-		new User { Id = 2, FirstName = "Normal", LastName = "User", Email = "test-my-home@myhome.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("user"), Role = Role.User }
+		new User { Id = 1, FirstName = "Admin", LastName = "User", Email = builder.Configuration["UserSettings:AdminEmail"], PasswordHash = BCrypt.Net.BCrypt.HashPassword(builder.Configuration["UserSettings:AdminPassword"]), Role = Role.Admin },
+		new User { Id = 2, FirstName = "Normal", LastName = "User", Email = builder.Configuration["UserSettings:NonAdminEmail"], PasswordHash = BCrypt.Net.BCrypt.HashPassword(builder.Configuration["UserSettings:NonAdminPassword"]), Role = Role.User }
 	};
 
 	using var scope = app.Services.CreateScope();
