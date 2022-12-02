@@ -36,8 +36,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+	app.UseSwagger();
+	app.UseSwaggerUI();
 }
 
 // configure HTTP request pipeline
@@ -60,16 +60,18 @@ if (app.Environment.IsDevelopment())
 
 // create hardcoded test users in db on startup
 {
-	var testUsers = new List<User>
-	{
-		new User { Id = 1, FirstName = "Admin", LastName = "User", Email = builder.Configuration["UserSettings:AdminEmail"], PasswordHash = BCrypt.Net.BCrypt.HashPassword(builder.Configuration["UserSettings:AdminPassword"]), Role = Role.Admin },
-		new User { Id = 2, FirstName = "Normal", LastName = "User", Email = builder.Configuration["UserSettings:NonAdminEmail"], PasswordHash = BCrypt.Net.BCrypt.HashPassword(builder.Configuration["UserSettings:NonAdminPassword"]), Role = Role.User }
-	};
-
 	using var scope = app.Services.CreateScope();
 	var dataContext = scope.ServiceProvider.GetRequiredService<DataContext>();
-	dataContext.Users.AddRange(testUsers);
-	dataContext.SaveChanges();
+	if (!dataContext.Users.Any())
+	{
+		var testUsers = new List<User>
+		{
+			new User { Id = 1, FirstName = "Admin", LastName = "User", Email = builder.Configuration["UserSettings:AdminEmail"], PasswordHash = BCrypt.Net.BCrypt.HashPassword(builder.Configuration["UserSettings:AdminPassword"]), Role = Role.Admin },
+			new User { Id = 2, FirstName = "Normal", LastName = "User", Email = builder.Configuration["UserSettings:NonAdminEmail"], PasswordHash = BCrypt.Net.BCrypt.HashPassword(builder.Configuration["UserSettings:NonAdminPassword"]), Role = Role.User }
+		};
+		dataContext.Users.AddRange(testUsers);
+		dataContext.SaveChanges();
+	}
 }
 
 app.Run();
