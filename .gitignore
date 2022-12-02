@@ -349,3 +349,5 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 MyHomeApi/WebApi/appsettings.Development.json
+MyHomeApi/WebApi/LocalDatabase.db-shm
+MyHomeApi/WebApi/LocalDatabase.db-wal
